@@ -8,6 +8,7 @@ import {
   isWritableElement,
   normalizeEOL,
   normalizeLink,
+  THEME,
   viewportCoordsToSceneCoords,
 } from "@excalidraw/common";
 
@@ -20,6 +21,7 @@ import {
   makeNextSelectedElementIds,
   maybeParseEmbedSrc,
   measureText,
+  newCodeBlockElements,
   newElementWith,
   newTextElement,
   normalizeText,
@@ -198,6 +200,26 @@ export class AppClipboard {
             : "center",
         retainSeed: isPlainPaste,
         preserveFrameChildrenOrder: true,
+      });
+      return;
+    }
+
+    // ------------------- Code block -------------------
+    if (!isPlainPaste && data.code) {
+      const { container, text } = newCodeBlockElements({
+        code: data.code.value,
+        language: data.code.language,
+        theme: this.app.state.theme === THEME.DARK ? "dark" : "light",
+        x: 0,
+        y: 0,
+      });
+      this.app.addElementsFromPasteOrLibrary({
+        elements: [container, text],
+        files: null,
+        position:
+          this.app.editorInterface.formFactor === "desktop"
+            ? "cursor"
+            : "center",
       });
       return;
     }

@@ -49,6 +49,7 @@ import type {
 import { getCreatePath, getRenderEnvironment } from "./renderEnvironment";
 
 import { getElementAbsoluteCoords, getElementBounds } from "./bounds";
+import { hasTextBackground, parseMarkdownCodeFenceLines } from "./codeBlock";
 import { getUncroppedImageElement } from "./cropElement";
 import { LinearElementEditor } from "./linearElementEditor";
 import {
@@ -440,6 +441,23 @@ const strokeStickyNoteEdge = (
   context.restore();
 };
 
+const getCodeLineStart = (
+  context: CanvasRenderingContext2D,
+  element: ExcalidrawTextElement,
+  runs: readonly { text: string }[],
+) => {
+  if (element.textAlign === "left") {
+    return 0;
+  }
+  let width = 0;
+  for (const run of runs) {
+    width += context.measureText(run.text).width;
+  }
+  return element.textAlign === "center"
+    ? (element.width - width) / 2
+    : element.width - width;
+};
+
 /**
  * `save()`s the context around `draw`, restoring it even when `draw` throws:
  * the scene renderer logs a failing element and carries on, and the element
@@ -675,8 +693,16 @@ const drawElementOnCanvas = (
           context.canvas.setAttribute("dir", rtl ? "rtl" : "ltr");
         }
         withSavedContext(context, () => {
+          if (hasTextBackground(element)) {
+            context.fillStyle = applyDarkModeFilter(
+              element.backgroundColor,
+              renderConfig.theme === THEME.DARK,
+            );
+            context.fillRect(0, 0, element.width, element.height);
+          }
+
           context.font = getFontString(element);
-          context.fillStyle = applyDarkModeFilter(
+          const textColor = applyDarkModeFilter(
             element.strokeColor,
             renderConfig.theme === THEME.DARK,
           );
@@ -684,6 +710,10 @@ const drawElementOnCanvas = (
 
           // Canvas does not support multiline text by default
           const lines = element.text.replace(/\r\n?/g, "\n").split("\n");
+          const markdownLines = parseMarkdownCodeFenceLines(
+            element.text,
+            renderConfig.theme === THEME.DARK ? "dark" : "light",
+          );
 
           const horizontalOffset =
             element.textAlign === "center"
@@ -704,11 +734,25 @@ const drawElementOnCanvas = (
           );
 
           for (let index = 0; index < lines.length; index++) {
-            context.fillText(
-              lines[index],
-              horizontalOffset,
-              index * lineHeightPx + verticalOffset,
-            );
+            const markdownLine = markdownLines?.[index];
+            const y = index * lineHeightPx + verticalOffset;
+            if (markdownLine?.type === "fence") {
+              continue;
+            }
+            if (markdownLine?.type === "code") {
+              context.textAlign = "left";
+              let x = getCodeLineStart(context, element, markdownLine.runs);
+              for (const run of markdownLine.runs) {
+                context.fillStyle = run.color;
+                context.fillText(run.text, x, y);
+                x += context.measureText(run.text).width;
+              }
+              continue;
+            }
+
+            context.textAlign = element.textAlign as CanvasTextAlign;
+            context.fillStyle = textColor;
+            context.fillText(lines[index], horizontalOffset, y);
           }
         });
         if (shouldTemporarilyAttach) {

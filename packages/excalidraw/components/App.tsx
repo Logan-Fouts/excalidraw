@@ -109,6 +109,7 @@ import {
   newFrameElement,
   newFreeDrawElement,
   newEmbeddableElement,
+  newCodeBlockElements,
   newMagicFrameElement,
   newStickyNoteElement,
   newIframeElement,
@@ -193,6 +194,7 @@ import {
   CaptureUpdateAction,
   type ElementUpdate,
   hitElementBoundingBox,
+  isCodeBlockTextElement,
   isLineElement,
   isSimpleArrow,
   StoreDelta,
@@ -6285,6 +6287,25 @@ class App extends React.Component<AppProps, AppState> {
       event,
       this.state,
     );
+
+    // double-clicking a code block opens the code block editor dialog
+    const doubleClickedElement = this.getElementAtPosition(sceneX, sceneY, {
+      includeBoundTextElement: true,
+    });
+    if (
+      doubleClickedElement &&
+      (isCodeBlockTextElement(doubleClickedElement) ||
+        (doubleClickedElement.type === "rectangle" &&
+          !!doubleClickedElement.customData?.codeBlock))
+    ) {
+      this.setState({
+        openDialog: {
+          name: "codeBlock",
+          editingElementId: doubleClickedElement.id,
+        },
+      });
+      return;
+    }
 
     if (selectedElements.length === 1 && isLinearElement(selectedElements[0])) {
       const selectedLinearElement: ExcalidrawLinearElement =
