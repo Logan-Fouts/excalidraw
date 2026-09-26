@@ -15,6 +15,7 @@ import {
   viewportCoordsToSceneCoords,
   type Bounds,
   type StylesPanelMode,
+  isTransparent,
 } from "@excalidraw/common";
 import {
   pointFrom,
@@ -1071,6 +1072,11 @@ export class AppText {
             ? container.strokeColor
             : this.app.state.currentItemStrokeColor,
         backgroundColor: this.app.state.currentItemBackgroundColor,
+        customData:
+          !(shouldBindToContainer && isStickyNoteElement(container)) &&
+          !isTransparent(this.app.state.currentItemBackgroundColor)
+            ? { textBackground: true }
+            : undefined,
         fillStyle: this.app.state.currentItemFillStyle,
         strokeWidth: this.app.getCurrentItemStrokeWidth("text"),
         strokeStyle: this.app.state.currentItemStrokeStyle,

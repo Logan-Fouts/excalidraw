@@ -5,10 +5,10 @@ import {
   DEFAULT_VERTICAL_ALIGN,
   getFontString,
   getLineHeight,
+  isTransparent,
   isWritableElement,
   normalizeEOL,
   normalizeLink,
-  THEME,
   viewportCoordsToSceneCoords,
 } from "@excalidraw/common";
 
@@ -21,7 +21,6 @@ import {
   makeNextSelectedElementIds,
   maybeParseEmbedSrc,
   measureText,
-  newCodeBlockElements,
   newElementWith,
   newTextElement,
   normalizeText,
@@ -200,26 +199,6 @@ export class AppClipboard {
             : "center",
         retainSeed: isPlainPaste,
         preserveFrameChildrenOrder: true,
-      });
-      return;
-    }
-
-    // ------------------- Code block -------------------
-    if (!isPlainPaste && data.code) {
-      const { container, text } = newCodeBlockElements({
-        code: data.code.value,
-        language: data.code.language,
-        theme: this.app.state.theme === THEME.DARK ? "dark" : "light",
-        x: 0,
-        y: 0,
-      });
-      this.app.addElementsFromPasteOrLibrary({
-        elements: [container, text],
-        files: null,
-        position:
-          this.app.editorInterface.formFactor === "desktop"
-            ? "cursor"
-            : "center",
       });
       return;
     }
@@ -466,6 +445,9 @@ export class AppClipboard {
       y,
       strokeColor: this.app.state.currentItemStrokeColor,
       backgroundColor: this.app.state.currentItemBackgroundColor,
+      customData: !isTransparent(this.app.state.currentItemBackgroundColor)
+        ? { textBackground: true }
+        : undefined,
       fillStyle: this.app.state.currentItemFillStyle,
       strokeWidth: this.app.getCurrentItemStrokeWidth("text"),
       strokeStyle: this.app.state.currentItemStrokeStyle,

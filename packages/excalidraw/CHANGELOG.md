@@ -13,6 +13,16 @@ Please add the latest change on the top under the correct section.
 
 ## Unreleased
 
+### Text backgrounds and fenced code (2026-09-25) [#XXXX](https://github.com/excalidraw/excalidraw/pull/XXXX)
+
+- Text elements can now use the Background color picker for a solid tint. Existing scenes keep dormant legacy text background values invisible until the text is explicitly tinted.
+- Markdown fenced sections such as ` ```js ` are syntax-highlighted directly in regular text elements. Fence delimiters are hidden on canvas and in SVG exports, but remain available in the in-canvas text editor; the separate code-block tool and modal are no longer used.
+
+### Text backgrounds and fenced code (2026-09-25) [#11529](https://github.com/excalidraw/excalidraw/pull/11529)
+
+- Text elements can now use the Background color picker for a solid tint. Existing scenes keep dormant legacy text background values invisible until the text is explicitly tinted.
+- Markdown fenced sections such as ` ```js ` are syntax-highlighted directly in regular text elements. Fence delimiters are hidden on canvas and in SVG exports, but remain available in the in-canvas text editor; the separate code-block tool and modal are no longer used.
+
 ### Minimap, zoom menu and `ui.disabled` (2026-11-12) [#12605](https://github.com/excalidraw/excalidraw/pull/12605), [#12606](https://github.com/excalidraw/excalidraw/pull/12606)
 
 - A toggleable minimap above the bottom-left canvas actions: drag its viewport (or press outside of it) to pan, wheel over it to zoom. Toggled from the footer button next to the zoom level, the Preferences menu, the command palette and the context menu; stored as `appState.minimapEnabled` (in the browser, not in exported files). Not shown on phones or in editors shorter than 500px.
